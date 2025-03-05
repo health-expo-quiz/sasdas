@@ -5,121 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supplements2U Receipt Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; text-align: center; background-color: #f4f4f4; }
-        button { padding: 10px 20px; font-size: 16px; background-color: #2c3e50; color: white; border: none; cursor: pointer; margin-top: 20px; }
-        button:hover { background-color: #34495e; }
-        #receiptPreview { margin-top: 20px; padding: 20px; border: 1px solid #ddd; background-color: white; max-width: 600px; margin-left: auto; margin-right: auto; text-align: left; }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Supplements2U Receipt Generator</h1>
-    <p>Click below to create your receipt!</p>
-    <button onclick="generateReceipt()">Generate Receipt</button>
-    <div id="receiptPreview"></div>
-    <script>
-        const { jsPDF } = window.jspdf;
-        function generateReceipt() {
-            const customerEmail = prompt("Customer Email:");
-            if (!customerEmail) { alert("Customer Email is required!"); return; }
-            const date = prompt("Date (YYYY-MM-DD, or leave blank for today):") || new Date().toISOString().split('T')[0];
-            const time = prompt("Time (HH:MM, or leave blank for now):") || new Date().toTimeString().slice(0, 5);
-            const paymentMethod = prompt("Payment Method (Cash/Card):") || "N/A";
-            const lastFour = prompt("Last 4 Digits of Payment:") || "N/A";
-            const items = [];
-            while (true) {
-                const itemName = prompt("Item Name (or leave blank to finish):");
-                if (!itemName) break;
-                const itemPrice = parseFloat(prompt(`Price for ${itemName} (in dollars):`)) || 0;
-                const itemQty = parseInt(prompt(`Quantity for ${itemName}:`)) || 0;
-                items.push({ name: itemName, price: itemPrice, qty: itemQty });
-            }
-            const abn = Math.floor(10000000000 + Math.random() * 90000000000).toString();
-            const phone = `04${Math.floor(1000 + Math.random() * 9000)} ${Math.floor(100 + Math.random() * 900)} ${Math.floor(100 + Math.random() * 900)}`;
-            const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            const receiptContent = `
-                <h1 style="text-align: center; color: #2c3e50;">Supplements2U</h1>
-                <p style="text-align: center; font-style: italic; color: #7f8c8d;">Your Health, Our Priority</p>
-                <p style="text-align: center;">ABN: ${abn} | Phone: ${phone}</p>
-                <p><strong>Date:</strong> ${date}</p>
-                <p><strong>Time:</strong> ${time}</p>
-                <hr>
+    <div class="container">
+        <h1>Supplements2U Receipt Generator</h1>
+        <form id="receiptForm">
+            <label for="customerEmail">Customer Email:</label>
+            <input type="email" id="customerEmail" required>
+
+            <label for="date">Date (YYYY-MM-DD):</label>
+            <input type="date" id="date">
+
+            <label for="time">Time (HH:MM):</label>
+            <input type="time" id="time">
+
+            <label for="paymentMethod">Payment Method:</label>
+            <select id="paymentMethod">
+                <option value="Cash">Cash</option>
+                <option value="Card">Card</option>
+            </select>
+
+            <label for="cardType">Card Type (if applicable):</label>
+            <select id="cardType">
+                <option value="N/A">N/A</option>
+                <option value="Visa">Visa</option>
+                <option value="Mastercard">Mastercard</option>
+                <option value="Amex">Amex</option>
+            </select>
+
+            <label for="lastFour">Last 4 Digits of Payment:</label>
+            <input type="text" id="lastFour" maxlength="4" placeholder="e.g., 1234">
+
+            <div id="items">
                 <h3>Items Purchased</h3>
-                <table style="width: 100%; border-collapse: collapse;">
-                    <tr style="background-color: #34495e; color: white;">
-                        <th style="padding: 8px; border: 1px solid #ddd;">Item</th>
-                        <th style="padding: 8px; border: 1px solid #ddd;">Qty</th>
-                        <th style="padding: 8px; border: 1px solid #ddd;">Unit Price</th>
-                        <th style="padding: 8px; border: 1px solid #ddd;">Total</th>
-                    </tr>
-                    ${items.map((item, index) => `
-                        <tr style="background-color: ${index % 2 === 0 ? '#f9f9f9' : '#ffffff'};">
-                            <td style="padding: 8px; border: 1px solid #ddd;">${item.name}</td>
-                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${item.qty}</td>
-                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">$${item.price.toFixed(2)}</td>
-                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">$${(item.price * item.qty).toFixed(2)}</td>
-                        </tr>
-                    `).join('')}
-                    <tr style="font-weight: bold; background-color: #ecf0f1;">
-                        <td colspan="3" style="padding: 8px; border: 1px solid #ddd; text-align: right;">Grand Total</td>
-                        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">$${total.toFixed(2)}</td>
-                    </tr>
-                </table>
-                <hr>
-                <p><strong>Payment Method:</strong> ${paymentMethod}</p>
-                <p><strong>Card Last 4 Digits:</strong> ${lastFour}</p>
-                <p style="text-align: center; margin-top: 20px; font-weight: bold;">Thank You for Shopping at Supplements2U!</p>
-                <p style="text-align: center; font-size: 12px;">All prices in AUD and include GST. Contact: supplements2ustore@outlook.com</p>
-            `;
-            document.getElementById('receiptPreview').innerHTML = receiptContent;
-            const doc = new jsPDF();
-            doc.setFont("Helvetica");
-            doc.setFontSize(16);
-            doc.text("Supplements2U", 105, 20, { align: "center" });
-            doc.setFontSize(12);
-            doc.text("Your Health, Our Priority", 105, 28, { align: "center" });
-            doc.text(`ABN: ${abn} | Phone: ${phone}`, 105, 36, { align: "center" });
-            doc.setLineWidth(0.5);
-            doc.line(20, 40, 190, 40);
-            doc.setFontSize(12);
-            doc.text(`Date: ${date}`, 20, 50);
-            doc.text(`Time: ${time}`, 20, 58);
-            doc.setFontSize(14);
-            doc.text("Items Purchased", 20, 70);
-            let y = 80;
-            doc.setFontSize(12);
-            doc.text("Item", 20, y);
-            doc.text("Qty", 80, y);
-            doc.text("Unit Price", 110, y);
-            doc.text("Total", 160, y);
-            y += 5;
-            doc.line(20, y, 190, y);
-            y += 5;
-            items.forEach(item => {
-                doc.text(item.name, 20, y);
-                doc.text(item.qty.toString(), 80, y);
-                doc.text(`$${item.price.toFixed(2)}`, 110, y);
-                doc.text(`$${(item.price * item.qty).toFixed(2)}`, 160, y);
-                y += 10;
-            });
-            doc.line(20, y - 5, 190, y - 5);
-            doc.setFont("Helvetica", "bold");
-            doc.text("Grand Total", 110, y);
-            doc.text(`$${total.toFixed(2)}`, 160, y);
-            doc.setFont("Helvetica", "normal");
-            y += 15;
-            doc.line(20, y, 190, y);
-            y += 10;
-            doc.text(`Payment Method: ${paymentMethod}`, 20, y);
-            y += 8;
-            doc.text(`Card Last 4 Digits: ${lastFour}`, 20, y);
-            y += 15;
-            doc.setFontSize(14);
-            doc.text("Thank You for Shopping at Supplements2U!", 105, y, { align: "center" });
-            doc.setFontSize(10);
-            doc.text("All prices in AUD and include GST. Contact: supplements2ustore@outlook.com", 105, y + 8, { align: "center" });
-            doc.save(`Supplements2U_Receipt_${date}_${time.replace(':', '')}.pdf`);
-        }
-    </script>
+                <div class="item">
+                    <input type="text" class="itemName" placeholder="Item Name">
+                    <input type="number" class="itemQty" placeholder="Qty" min="0">
+                    <input type="number" class="itemPrice" placeholder="Price ($)" min="0" step="0.01">
+                </div>
+            </div>
+            <button type="button" onclick="addItem()">Add Another Item</button>
+            <button type="submit">Generate Receipt</button>
+        </form>
+        <div id="receiptPreview"></div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
