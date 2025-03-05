@@ -19,15 +19,30 @@ h1 {
     margin-bottom: 20px;
 }
 
+h2 {
+    color: #34495e;
+    font-size: 18px;
+    margin: 15px 0 10px;
+}
+
 form {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
+}
+
+.section {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 4px;
+    background-color: #fafafa;
 }
 
 label {
     font-weight: bold;
     text-align: left;
+    display: block;
+    margin-bottom: 5px;
 }
 
 input, select {
@@ -37,6 +52,7 @@ input, select {
     border-radius: 4px;
     width: 100%;
     box-sizing: border-box;
+    margin-bottom: 10px;
 }
 
 .item {
@@ -57,6 +73,7 @@ button {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    margin: 5px 0;
 }
 
 button:hover {
@@ -67,9 +84,9 @@ button:hover {
     margin-top: 20px;
     padding: 20px;
     border: 1px solid #ddd;
-    text-align: left;
     background-color: #fff;
     border-radius: 4px;
+    text-align: left;
 }
 
 table {
@@ -81,7 +98,6 @@ table {
 th, td {
     padding: 8px;
     border: 1px solid #ddd;
-    text-align: left;
 }
 
 th {
@@ -100,4 +116,8 @@ tr:nth-child(odd) {
 .total-row {
     font-weight: bold;
     background-color: #ecf0f1;
+}
+
+.hidden {
+    display: none;
 }
