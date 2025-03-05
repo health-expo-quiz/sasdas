@@ -1,9 +1,13 @@
-// Ensure jsPDF is loaded from the CDN
 const { jsPDF } = window.jspdf;
 
 document.getElementById('receiptForm').addEventListener('submit', function (e) {
     e.preventDefault();
     generateReceipt();
+});
+
+document.getElementById('paymentMethod').addEventListener('change', function () {
+    const cardDetails = document.getElementById('cardDetails');
+    cardDetails.classList.toggle('hidden', this.value !== 'Card');
 });
 
 function addItem() {
@@ -50,6 +54,11 @@ function generateReceipt() {
         // Calculate total
         const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
+        // Format payment details
+        const paymentText = paymentMethod === "Card" && lastFour !== "N/A" 
+            ? `Paid via ${cardType} ending in ${lastFour}` 
+            : `Paid via ${paymentMethod}`;
+
         // Generate receipt HTML for preview
         const receiptContent = `
             <h1 style="text-align: center; color: #2c3e50;">Supplements2U</h1>
@@ -80,9 +89,7 @@ function generateReceipt() {
                 </tr>
             </table>
             <hr>
-            <p><strong>Payment Method:</strong> ${paymentMethod}</p>
-            <p><strong>Card Type:</strong> ${cardType}</p>
-            <p><strong>Card Last 4 Digits:</strong> ${lastFour}</p>
+            <p><strong>Payment:</strong> ${paymentText}</p>
             <p style="text-align: center; margin-top: 20px; font-weight: bold;">Thank You for Shopping at Supplements2U!</p>
             <p style="text-align: center; font-size: 12px;">All prices in AUD and include GST. Contact: supplements2ustore@outlook.com</p>
         `;
@@ -98,79 +105,82 @@ function generateReceipt() {
         });
 
         // Header
-        doc.setFontSize(18);
+        doc.setFontSize(20);
         doc.setFont("Helvetica", "bold");
         doc.setTextColor(44, 62, 80); // #2c3e50
-        doc.text("Supplements2U", 105, 20, { align: "center" });
+        doc.text("Supplements2U", 105, 15, { align: "center" });
         doc.setFontSize(12);
         doc.setFont("Helvetica", "italic");
         doc.setTextColor(127, 140, 141); // #7f8c8d
-        doc.text("Your Health, Our Priority", 105, 28, { align: "center" });
+        doc.text("Your Health, Our Priority", 105, 23, { align: "center" });
         doc.setFont("Helvetica", "normal");
         doc.setTextColor(51, 51, 51); // #333
-        doc.text(`ABN: ${abn} | Phone: ${phone}`, 105, 36, { align: "center" });
+        doc.text(`ABN: ${abn}  |  Phone: ${phone}`, 105, 31, { align: "center" });
         doc.setLineWidth(0.5);
-        doc.line(20, 40, 190, 40);
+        doc.setDrawColor(52, 73, 94); // #34495e
+        doc.line(20, 35, 190, 35);
 
         // Receipt Details
         doc.setFontSize(12);
-        doc.text(`Date: ${date}`, 20, 50);
-        doc.text(`Time: ${time}`, 20, 58);
+        doc.text(`Date: ${date}`, 20, 45);
+        doc.text(`Time: ${time}`, 20, 53);
 
         // Items Table
         doc.setFontSize(14);
         doc.setFont("Helvetica", "bold");
-        doc.text("Items Purchased", 20, 70);
-        let y = 78;
-        doc.setFontSize(12);
-        doc.setFont("Helvetica", "normal");
+        doc.text("Items Purchased", 20, 65);
+        let y = 73;
+        doc.setFontSize(11);
         doc.setFillColor(52, 73, 94); // #34495e
-        doc.rect(20, y, 170, 8, "F");
+        doc.rect(20, y, 170, 7, "F");
         doc.setTextColor(255, 255, 255);
-        doc.text("Item", 22, y + 6);
-        doc.text("Qty", 90, y + 6, { align: "center" });
-        doc.text("Unit Price", 120, y + 6, { align: "right" });
-        doc.text("Total", 180, y + 6, { align: "right" });
-        y += 8;
+        doc.text("Item", 22, y + 5);
+        doc.text("Qty", 90, y + 5, { align: "center" });
+        doc.text("Unit Price", 120, y + 5, { align: "right" });
+        doc.text("Total", 180, y + 5, { align: "right" });
+        y += 7;
 
         doc.setTextColor(51, 51, 51);
+        doc.setFont("Helvetica", "normal");
         items.forEach((item, index) => {
             doc.setFillColor(index % 2 === 0 ? 249 : 255, index % 2 === 0 ? 249 : 255, index % 2 === 0 ? 249 : 255); // #f9f9f9 or #ffffff
-            doc.rect(20, y, 170, 8, "F");
-            doc.text(item.name.slice(0, 30), 22, y + 6); // Limit item name length
-            doc.text(item.qty.toString(), 90, y + 6, { align: "center" });
-            doc.text(`$${item.price.toFixed(2)}`, 120, y + 6, { align: "right" });
-            doc.text(`$${(item.price * item.qty).toFixed(2)}`, 180, y + 6, { align: "right" });
-            y += 8;
+            doc.rect(20, y, 170, 7, "F");
+            doc.text(item.name.slice(0, 30), 22, y + 5); // Truncate long names
+            doc.text(item.qty.toString(), 90, y + 5, { align: "center" });
+            doc.text(`$${item.price.toFixed(2)}`, 120, y + 5, { align: "right" });
+            doc.text(`$${(item.price * item.qty).toFixed(2)}`, 180, y + 5, { align: "right" });
+            y += 7;
         });
 
         doc.setFillColor(236, 240, 241); // #ecf0f1
-        doc.rect(20, y, 170, 8, "F");
+        doc.rect(20, y, 170, 7, "F");
         doc.setFont("Helvetica", "bold");
-        doc.text("Grand Total", 120, y + 6, { align: "right" });
-        doc.text(`$${total.toFixed(2)}`, 180, y + 6, { align: "right" });
-        doc.setFont("Helvetica", "normal");
-        y += 15;
+        doc.text("Grand Total", 120, y + 5, { align: "right" });
+        doc.text(`$${total.toFixed(2)}`, 180, y + 5, { align: "right" });
+        y += 12;
 
         // Payment Details
+        doc.setLineWidth(0.3);
         doc.line(20, y, 190, y);
-        y += 10;
-        doc.text(`Payment Method: ${paymentMethod}`, 20, y);
         y += 8;
-        doc.text(`Card Type: ${cardType}`, 20, y);
-        y += 8;
-        doc.text(`Card Last 4 Digits: ${lastFour}`, 20, y);
+        doc.setFontSize(12);
+        doc.setFont("Helvetica", "normal");
+        doc.setTextColor(51, 51, 51);
+        doc.text(paymentText, 20, y);
 
         // Footer
         y += 15;
         doc.setFontSize(14);
         doc.setFont("Helvetica", "bold");
+        doc.setTextColor(44, 62, 80);
         doc.text("Thank You for Shopping at Supplements2U!", 105, y, { align: "center" });
         doc.setFontSize(10);
         doc.setFont("Helvetica", "normal");
-        doc.text("All prices in AUD and include GST. Contact: supplements2ustore@outlook.com", 105, y + 8, { align: "center" });
+        doc.setTextColor(127, 140, 141);
+        doc.text("All prices in AUD and include GST", 105, y + 8, { align: "center" });
+        doc.text("Contact: supplements2ustore@outlook.com", 105, y + 14, { align: "center" });
 
-        // Download PDF using Blob URL as fallback
+        // Download PDF
         const pdfOutput = doc.output('blob');
         const url = URL.createObjectURL(pdfOutput);
         const link = document.createElement('a');
@@ -182,6 +192,6 @@ function generateReceipt() {
         URL.revokeObjectURL(url);
     } catch (error) {
         console.error("Error generating PDF:", error);
-        alert("An error occurred while generating the PDF. Please try again.");
+        alert("An error occurred while generating the PDF. Please check the console and try again.");
     }
 }
